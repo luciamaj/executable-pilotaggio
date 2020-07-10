@@ -50,7 +50,7 @@ const writeIni = () => {
         baseUrl[2] = answers.baseUrl;
         backupAppUrl[2] = answers.backupAppUrl;
 
-        fs.writeFile('monitoraggio-periferica/config2.ini', '# ini periferica' , function() {
+        fs.writeFile('monitoraggio-periferica/config.ini', '# ini periferica' , function() {
             var myFile = objfile('monitoraggio-periferica/config2.ini');
 
             for(let value of values) {
