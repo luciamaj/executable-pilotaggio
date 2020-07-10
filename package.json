@@ -1,0 +1,23 @@
+{
+  "name": "executable",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "cli-app": "./interfaccia.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^5.1.0",
+    "fs": "0.0.1-security",
+    "inquirer": "^7.3.0",
+    "objfile": "^0.1.2",
+    "pkg": "^4.4.9",
+    "rxjs": "^6.6.0",
+    "simple-git": "^2.12.0"
+  }
+}
