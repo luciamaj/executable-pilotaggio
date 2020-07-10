@@ -1,5 +1,6 @@
 
 'use strict';
+//PER COMPILARE: node js2exe.js "interfaccia.js"
 
 const program = require('commander');
 const inquirer = require('inquirer');
