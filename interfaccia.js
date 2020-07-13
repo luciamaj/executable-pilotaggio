@@ -36,7 +36,7 @@ function downloadRepo() {
 const writeIni = () => {
     inquirer.prompt(prompts).then(answers => { 
         let name = ['info', 'name', ''];
-        let centrale = ['connection', 'name', ''];
+        let centrale = ['connection', 'centrale', ''];
         let io = ['connection', 'io', ''];
         let path = ['git', 'path', ''];
         let baseUrl = ['app', 'baseUrl', ''];
