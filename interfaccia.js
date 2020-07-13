@@ -10,14 +10,16 @@ const inquirer = require('inquirer');
 const simpleGit = require('simple-git');
 const git = simpleGit();
 const fs = require('fs');
-const { exec } = require('child_process');
+const execFile = require('child_process').execFile;
+const spawn = require('child_process').spawn;
 var objfile = require('objfile');
 const colors = require('colors');
 const ora = require('ora');
 inquirer.registerPrompt('suggest', require('inquirer-prompt-suggest'));
 
 // PERCORSI STANDARD
-
+let adminFolder = 'C:\\Admin';
+let nssmPath = 'C:\\Admin\\bin\\nssm.exe';
 
 const receiver = () => {
     inquirer.prompt([{type: 'confirm', name: 'git', message: 'scaricare server base da GIT?'}]).then(answers => 
@@ -36,12 +38,24 @@ const receiver = () => {
 
 
 function downloadRepo() {
-    const spinner = ora('Download della repositoty...').start();
-    //process.chdir(__dirname);
+    const spinner = ora('Download della repositoty nella cartella... ' + adminFolder).start();
+    process.chdir(adminFolder);
     git.clone('https://github.com/luciamaj/monitoraggio-periferica.git', function() {
         spinner.succeed();
-        writeIni();    
+        execNssm();    
     });
+}
+
+function execNssm() {
+    const spinner = ora('Installazione del service... ' + nssmPath).start();
+    execFile(nssmPath, function(err, data) {
+        if(err) {
+            console.log(err);
+        }
+
+        spinner.succeed();
+        writeIni();
+    })
 }
 
 const writeIni = () => {
@@ -144,19 +158,42 @@ const writeIni = () => {
 
         fs.writeFile('monitoraggio-periferica/config.ini', '# ini periferica' , function() {
             var myFile = objfile('monitoraggio-periferica/config2.ini');
+            let i = 0;
 
             for(let value of values) {
                 myFile.set(value[0], value[1], value[2], function (err) {
                     if (err) {
                     console.error(err);
                     } else {
-                    //console.log('Value set');
+                        if (i == values.length) {
+                            setUpDone();
+                        } else {
+                            i+=1;
+                        }
                     }
                 });
             }
         });
     })
     .catch(console.error);
+}
+
+inquirer.prompt([{type: 'confirm', name: 'reboot', message: 'Vuoi riavviare il computer?'}]).then(answers => 
+    {
+        if(answers.reboot == true) {
+            console.log("Setup terminato!" .rainbow);
+            rebootPc();
+        } else if (answers.git == 'n' || answers.git == 'no') {
+            console.log('arrivederci!');
+            return;
+        } else {
+            console.log('rispondere con y/n');
+        }
+    }
+);
+
+function rebootPc() {
+    spawn('shutdown /r');
 }
 
 program
