@@ -2,6 +2,9 @@
 'use strict';
 //PER COMPILARE: node js2exe.js "interfaccia.js"
 
+
+// DECLARATIONS
+
 const program = require('commander');
 const inquirer = require('inquirer');
 const simpleGit = require('simple-git');
@@ -9,12 +12,17 @@ const git = simpleGit();
 const fs = require('fs');
 const { exec } = require('child_process');
 var objfile = require('objfile');
+const colors = require('colors');
+const ora = require('ora');
+inquirer.registerPrompt('suggest', require('inquirer-prompt-suggest'));
+
+// PERCORSI STANDARD
+
 
 const receiver = () => {
-    inquirer.prompt([{type: 'confirm', name: 'git', message: 'scaricare server base da git? (y/n)'}]).then(answers => 
+    inquirer.prompt([{type: 'confirm', name: 'git', message: 'scaricare server base da GIT?'}]).then(answers => 
         {
             if(answers.git == true) {
-                console.log('dowloading...'); 
                 downloadRepo();
             } else if (answers.git == 'n' || answers.git == 'no') {
                 console.log('arrivederci!');
@@ -26,15 +34,98 @@ const receiver = () => {
     ) 
 }
 
+
 function downloadRepo() {
+    const spinner = ora('Download della repositoty...').start();
+    //process.chdir(__dirname);
     git.clone('https://github.com/luciamaj/monitoraggio-periferica.git', function() {
-        console.log('dowload repo terminato');
+        spinner.succeed();
         writeIni();    
     });
 }
 
 const writeIni = () => {
-    inquirer.prompt(prompts).then(answers => { 
+    (async () => {
+        const ans1 = await inquirer.prompt([
+            {type: 'input', name: 'name', message: "nome della macchina (es: pc-totem1)", validate: 
+            function (input) {
+                    var done = this.async();
+        
+                    if (input == '') {
+                        done('Il campo non può essere vuoto');
+                        return;
+                    }
+                    done(null, true);
+                }
+            },
+            {type: 'suggest', name: 'centrale', message: "url del server di monitoraggio centrale (es: http://marcegaglia-desk.eadev.it:3030)", suggestions: ['http://marcegaglia-desk.eadev.it:3030'], validate: 
+            function (input) {
+                    var done = this.async();
+        
+                    if (input == '') {
+                        done('Il campo non può essere vuoto');
+                        return;
+                    }
+                    done(null, true);
+                }
+            },
+            {type: 'suggest', name: 'port', message: "porta del server locale (es: 4000)", suggestions: ['4000'], validate: 
+            function (input) {
+                    var done = this.async();
+        
+                    if (input == '') {
+                        done('Il campo non può essere vuoto');
+                        return;
+                    }
+                    done(null, true);
+                }},
+            {type: 'input', name: 'topic', message: "Topic di base della macchina (es: azienda)", validate: 
+            function (input) {
+                    var done = this.async();
+        
+                    if (input == '') {
+                        done('Il campo non può essere vuoto');
+                        return;
+                    }
+                    done(null, true);
+            }}
+        ]);
+        const ans2 = await inquirer.prompt([
+            {type: 'suggest', name: 'path', message: "path dell'applicazione (es: C:\\xampp562\\htdocs\\azienda)", suggestions: ['C:\\xampp562\\htdocs\\' + ans1.topic], validate: 
+            function (input) {
+                    var done = this.async();
+        
+                    if (input == '') {
+                        done('Il campo non può essere vuoto');
+                        return;
+                    }
+                    done(null, true);
+                }},
+            {type: 'input', name: 'baseUrl', message: "URL dell'applicazione (es: http://localhost/azienda/)", suggestions: ['http://localhost/' + ans1.topic], validate: 
+            function (input) {
+                    var done = this.async();
+        
+                    if (input == '') {
+                        done('Il campo non può essere vuoto');
+                        return;
+                    }
+                    done(null, true);
+                }},
+            {type: 'input', name: 'backupAppUrl', message: "App di base (es: totem_default)", validate: 
+            function (input) {
+                    var done = this.async();
+        
+                    if (input == '') {
+                        done('Il campo non può essere vuoto');
+                        return;
+                    }
+                    done(null, true);
+                }
+            },
+        ]);
+        return { ...ans1, ...ans2 };
+      })()
+    .then(answers => {
         let name = ['info', 'name', ''];
         let centrale = ['connection', 'centrale', ''];
         let io = ['connection', 'io', ''];
@@ -57,96 +148,16 @@ const writeIni = () => {
             for(let value of values) {
                 myFile.set(value[0], value[1], value[2], function (err) {
                     if (err) {
-                      console.error(err);
+                    console.error(err);
                     } else {
-                      //console.log('Value set');
+                    //console.log('Value set');
                     }
                 });
             }
         });
-    }); 
+    })
+    .catch(console.error);
 }
-
-function validate(input) {
-    var done = this.async();
-    setTimeout(function() {
-        if (typeof input !== 'number') {
-          // Pass the return value in the done callback
-          done('You need to provide a number');
-          return;
-        }
-        // Pass the return value in the done callback
-        done(null, true);
-    }, 3000);
-} 
-
-let prompts;
-
-prompts = [
-    {type: 'input', name: 'name', message: "nome della macchina (es: pc-totem1)", validate: 
-    function (input) {
-            var done = this.async();
-
-            if (input == '') {
-                done('Il campo non può essere vuoto');
-                return;
-            }
-            done(null, true);
-        }
-    },
-    {type: 'input', name: 'centrale', message: "url del server di monitoraggio centrale (es: http://marcegaglia-desk.eadev.it:3030)", validate: 
-    function (input) {
-            var done = this.async();
-
-            if (input == '') {
-                done('Il campo non può essere vuoto');
-                return;
-            }
-            done(null, true);
-        }
-    },
-    {type: 'input', name: 'port', message: "porta del server locale (es: 4000)", validate: 
-    function (input) {
-            var done = this.async();
-
-            if (input == '') {
-                done('Il campo non può essere vuoto');
-                return;
-            }
-            done(null, true);
-        }},
-    {type: 'input', name: 'path', message: "path dell'applicazione (es: C:\\xampp562\\htdocs\\azienda)", validate: 
-    function (input) {
-            var done = this.async();
-
-            if (input == '') {
-                done('Il campo non può essere vuoto');
-                return;
-            }
-            done(null, true);
-        }},
-    {type: 'input', name: 'baseUrl', message: "URL dell'applicazione (es: http://localhost/azienda/)", validate: 
-    function (input) {
-            var done = this.async();
-
-            if (input == '') {
-                done('Il campo non può essere vuoto');
-                return;
-            }
-            done(null, true);
-        }},
-    {type: 'input', name: 'backupAppUrl', message: "App di base (es: totem_default)", validate: 
-    function (input) {
-            var done = this.async();
-
-            if (input == '') {
-                done('Il campo non può essere vuoto');
-                return;
-            }
-            done(null, true);
-        }
-    },
-]
 
 program
   .alias('0.0.1')

@@ -12,10 +12,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cli-spinners": "^2.3.0",
+    "colors": "^1.4.0",
     "commander": "^5.1.0",
+    "execa": "^4.0.3",
     "fs": "0.0.1-security",
     "inquirer": "^7.3.0",
+    "inquirer-prompt-suggest": "^0.1.0",
+    "listr": "^0.14.3",
     "objfile": "^0.1.2",
+    "ora": "^4.0.4",
     "pkg": "^4.4.9",
     "rxjs": "^6.6.0",
     "simple-git": "^2.12.0"
