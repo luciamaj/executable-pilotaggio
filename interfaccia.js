@@ -18,8 +18,9 @@ const ora = require('ora');
 inquirer.registerPrompt('suggest', require('inquirer-prompt-suggest'));
 
 // PERCORSI STANDARD
-let adminFolder = 'C:\\Admin';
-let nssmPath = 'C:\\Admin\\bin\\nssm.exe';
+
+let adminFolder = 'C:\\Users\\majlu\\executable-pilotaggio\\monitoraggio-periferica';
+let nssmPath = 'C:\\Users\\majlu\\executable-pilotaggio\\bin\\nssm.exe';
 
 const receiver = () => {
     inquirer.prompt([{type: 'confirm', name: 'git', message: 'scaricare server base da GIT?'}]).then(answers => 
@@ -39,7 +40,6 @@ const receiver = () => {
 
 function downloadRepo() {
     const spinner = ora('Download della repositoty nella cartella... ').start();
-    process.chdir(adminFolder);
     git.clone('https://github.com/luciamaj/monitoraggio-periferica.git', function() {
         spinner.succeed();
         writeIni();    
@@ -158,8 +158,8 @@ const writeIni = () => {
 
         console.log("done?");
 
-        /*fs.writeFile('config.ini', '# ini periferica' , function() {
-            var myFile = objfile('config.ini');
+        fs.writeFile(adminFolder + '\\config.ini', '# ini periferica' , function() {
+            var myFile = objfile(adminFolder + '\\config.ini');
             let i = 0;
 
             for(let value of values) {
@@ -177,7 +177,7 @@ const writeIni = () => {
                     }
                 });
             }
-        });*/
+        });
     })
     .catch(console.error);
 }
@@ -187,7 +187,13 @@ function done() {
         {
             if(answers.reboot == true) {
                 console.log("Setup terminato!" .rainbow);
-                rebootPc();
+                
+                execFile(nssmPath, function(err, data) {
+                    if(err) {
+                        console.log(err);
+                    }
+                })
+
             } else if (answers.git == 'n' || answers.git == 'no') {
                 console.log('arrivederci!');
                 return;
@@ -196,6 +202,18 @@ function done() {
             }
         }
     );
+}
+
+function execPromise(command) {
+    return new Promise(function (resolve, reject) {
+        exec(command, (err, stdout, stderr) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(stdout.trim());
+        });
+    })
 }
 
 function rebootPc() {
