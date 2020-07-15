@@ -38,11 +38,10 @@ const receiver = () => {
 
 
 function downloadRepo() {
-    const spinner = ora('Download della repositoty nella cartella... ' + adminFolder).start();
-    process.chdir(adminFolder);
+    const spinner = ora('Download della repositoty nella cartella... ').start();
     git.clone('https://github.com/luciamaj/monitoraggio-periferica.git', function() {
         spinner.succeed();
-        execNssm();    
+        writeIni();    
     });
 }
 
@@ -126,7 +125,7 @@ const writeIni = () => {
                     }
                     done(null, true);
                 }},
-            {type: 'input', name: 'baseUrl', message: "URL dell'applicazione (es: http://localhost/azienda/)", suggestions: ['http://localhost/' + ans1.topic], validate: 
+            {type: 'suggest', name: 'baseUrl', message: "URL dell'applicazione (es: http://localhost/azienda/)", suggestions: ['http://localhost/' + ans1.topic + '/'], validate: 
             function (input) {
                     var done = this.async();
         
@@ -169,20 +168,24 @@ const writeIni = () => {
         baseUrl[2] = answers.baseUrl;
         backupAppUrl[2] = answers.backupAppUrl;
 
-        fs.writeFile('monitoraggio-periferica/config.ini', '# ini periferica' , function() {
-            var myFile = objfile('monitoraggio-periferica/config2.ini');
+        console.log("done?");
+
+        fs.writeFile(adminFolder + '\\config.ini', '# ini periferica' , function() {
+            var myFile = objfile(adminFolder + '\\config.ini');
             let i = 0;
 
             for(let value of values) {
                 myFile.set(value[0], value[1], value[2], function (err) {
                     if (err) {
-                    console.error(err);
+                        console.error(err); 
+                    }
+
+                    console.log("written!");
+
+                    if(i == values.length) {
+                        done();
                     } else {
-                        if (i == values.length) {
-                            setUpDone();
-                        } else {
-                            i+=1;
-                        }
+                        values++;
                     }
                 });
             }
@@ -191,19 +194,39 @@ const writeIni = () => {
     .catch(console.error);
 }
 
-inquirer.prompt([{type: 'confirm', name: 'reboot', message: 'Vuoi riavviare il computer?'}]).then(answers => 
-    {
-        if(answers.reboot == true) {
-            console.log("Setup terminato!" .rainbow);
-            rebootPc();
-        } else if (answers.git == 'n' || answers.git == 'no') {
-            console.log('arrivederci!');
-            return;
-        } else {
-            console.log('rispondere con y/n');
+function done() {
+    inquirer.prompt([{type: 'confirm', name: 'reboot', message: 'Vuoi riavviare il computer?'}]).then(answers => 
+        {
+            if(answers.reboot == true) {
+                console.log("Setup terminato!" .rainbow);
+                
+                execFile(nssmPath, function(err, data) {
+                    if(err) {
+                        console.log(err);
+                    }
+                })
+
+            } else if (answers.git == 'n' || answers.git == 'no') {
+                console.log('arrivederci!');
+                return;
+            } else {
+                console.log('rispondere con y/n');
+            }
         }
-    }
-);
+    );
+}
+
+function execPromise(command) {
+    return new Promise(function (resolve, reject) {
+        exec(command, (err, stdout, stderr) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(stdout.trim());
+        });
+    })
+}
 
 function rebootPc() {
     spawn('shutdown /r');
