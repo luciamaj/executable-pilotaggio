@@ -18,8 +18,8 @@ const ora = require('ora');
 inquirer.registerPrompt('suggest', require('inquirer-prompt-suggest'));
 
 // PERCORSI STANDARD
-let adminFolder = 'C:\\Admin';
-let nssmPath = 'C:\\Admin\\bin\\nssm.exe';
+let adminFolder = '/Users/mac';
+let nssmPath = '/Users/mac/bin/nssm.exe';
 
 const receiver = () => {
     inquirer.prompt([{type: 'confirm', name: 'git', message: 'scaricare server base da GIT?'}]).then(answers => 
@@ -72,6 +72,17 @@ const writeIni = () => {
                     done(null, true);
                 }
             },
+            {type: 'suggest', name: 'debug', message: "Attivare debug? (es: true)", suggestions: ['true', 'false'], validate: 
+            function (input) {
+                    var done = this.async();
+        
+                    if (input == '') {
+                        done('Il campo non può essere vuoto');
+                        return;
+                    }
+                    done(null, true);
+                }
+            },
             {type: 'suggest', name: 'centrale', message: "url del server di monitoraggio centrale (es: http://marcegaglia-desk.eadev.it:3030)", suggestions: ['http://marcegaglia-desk.eadev.it:3030'], validate: 
             function (input) {
                     var done = this.async();
@@ -105,7 +116,7 @@ const writeIni = () => {
             }}
         ]);
         const ans2 = await inquirer.prompt([
-            {type: 'suggest', name: 'path', message: "path dell'applicazione (es: C:\\xampp562\\htdocs\\azienda)", suggestions: ['C:\\xampp562\\htdocs\\' + ans1.topic], validate: 
+            {type: 'suggest', name: 'path', message: "path dell'applicazione (es: C:\\xampp562\\htdocs\\)", suggestions: ['C:\\xampp562\\htdocs\\'], validate: 
             function (input) {
                     var done = this.async();
         
@@ -141,15 +152,17 @@ const writeIni = () => {
       })()
     .then(answers => {
         let name = ['info', 'name', ''];
+        let debug = ['info', 'debug', ''];
         let centrale = ['connection', 'centrale', ''];
         let io = ['connection', 'io', ''];
         let path = ['git', 'path', ''];
         let baseUrl = ['app', 'baseUrl', ''];
         let backupAppUrl = ['app', 'backupAppUrl', ''];
 
-        let values = [name, centrale, io, path, baseUrl, backupAppUrl];
+        let values = [name, debug, centrale, io, path, baseUrl, backupAppUrl];
 
         name[2] = answers.name;
+        debug[2] = answers.debug;
         centrale[2] = answers.centrale;
         io[2] = answers.port;
         path[2] = answers.path;
