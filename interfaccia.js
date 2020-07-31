@@ -2,6 +2,11 @@
 'use strict';
 //PER COMPILARE: node js2exe.js "interfaccia.js"
 
+// scaricare il pacchetto periferica completo da git
+// compilare il config.ini
+// eseguire nssm.exe
+
+
 
 // DECLARATIONS
 
@@ -13,13 +18,12 @@ const fs = require('fs');
 const execFile = require('child_process').execFile;
 const spawn = require('child_process').spawn;
 var objfile = require('objfile');
-const colors = require('colors');
 const ora = require('ora');
 inquirer.registerPrompt('suggest', require('inquirer-prompt-suggest'));
 
 // PERCORSI STANDARD
 let adminFolder = '/Users/mac';
-let nssmPath = '/Users/mac/bin/nssm.exe';
+let nssmPath = './bin/nssm.exe';
 
 const receiver = () => {
     inquirer.prompt([{type: 'confirm', name: 'git', message: 'scaricare server base da GIT?'}]).then(answers => 
